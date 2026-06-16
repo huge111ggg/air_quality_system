@@ -1,0 +1,17 @@
+方法一：推荐
+双击 start_air_quality.bat
+等待窗口显示：
+Running on http://127.0.0.1:5001
+然后浏览器打开：
+http://127.0.0.1:5001
+
+方法二：VS Code终端运行
+cd C:\codex工作空间\skill-ppt\air_quality_system
+python generate_dataset.py
+python train_model.py
+python app.py
+
+注意：
+1. 运行 python app.py 后，终端停住不动是正常的，说明网页服务正在运行。
+2. 不要关闭终端窗口，否则网页会停止。
+3. 浏览器地址是 5001，不是 5000。

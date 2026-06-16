@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>城市空气质量等级预测系统</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="mission">
+    <section class="command-deck">
+      <div class="deck-copy">
+        <span class="system-mark">AIR QUALITY COMMAND</span>
+        <h1>城市空气质量等级预测系统</h1>
+        <p>融合气象、交通、工业排放与污染物监测指标，输出空气质量等级和治理建议。</p>
+      </div>
+      <div class="sky-orbit" aria-hidden="true">
+        <div class="orbit-ring"></div>
+        <div class="aqi-core">
+          <small>AVG AQI</small>
+          <strong>{{ summary.avg_aqi }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="telemetry-strip" aria-label="系统概览">
+      <div><span>记录</span><b>{{ summary.rows }}</b></div>
+      <div><span>字段</span><b>{{ summary.columns }}</b></div>
+      <div><span>平均PM2.5</span><b>{{ summary.avg_pm25 }}</b></div>
+      <div><span>平均PM10</span><b>{{ summary.avg_pm10 }}</b></div>
+      <div><span>污染占比</span><b>{{ summary.pollution_ratio }}</b></div>
+      <div><span>最佳F1</span><b>{{ summary.best_f1 }}</b></div>
+    </section>
+
+    <section class="operations">
+      <form method="post" class="sensor-console">
+        <div class="console-head">
+          <h2>监测站数据录入</h2>
+          <button type="submit">执行预测</button>
+        </div>
+        <div class="sensor-stack">
+          {% for row in sensors %}
+            <label class="sensor-row">
+              <span>{{ row.label }}</span>
+              <input name="{{ row.key }}" type="number" step="0.1" value="{{ row.value }}">
+              <em>{{ row.unit }}</em>
+            </label>
+          {% endfor %}
+        </div>
+      </form>
+
+      <section class="forecast-board">
+        <div class="forecast-header">
+          <span>MODEL OUTPUT</span>
+          <b>{{ summary.best_model }}</b>
+        </div>
+        {% if prediction %}
+          <div class="forecast-level level-{{ prediction }}">
+            <small>空气质量等级</small>
+            <strong>{{ prediction }}</strong>
+          </div>
+          {% if probability %}
+            <div class="probability-lanes">
+              {% for item in probability %}
+                <div>
+                  <span>{{ item.name }}</span>
+                  <i style="--w: {{ item.raw }}%"></i>
+                  <b>{{ item.value }}</b>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="forecast-empty">
+            <strong>等待监测站输入</strong>
+            <span>提交数据后显示预测等级、概率分布和治理建议。</span>
+          </div>
+        {% endif %}
+      </section>
+    </section>
+
+    <section class="response-grid">
+      <article class="action-feed">
+        <header>
+          <h2>治理建议</h2>
+          <span>Response Plan</span>
+        </header>
+        {% if advice %}
+          <ol>
+            {% for item in advice %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p>暂无建议。完成一次预测后，系统会根据污染物、交通、工业排放和扩散条件生成建议。</p>
+        {% endif %}
+      </article>
+
+      <article class="level-ledger">
+        <header>
+          <h2>样本等级账本</h2>
+          <span>Dataset Ledger</span>
+        </header>
+        {% for level, count in summary.level_counts.items() %}
+          <div class="ledger-row">
+            <span>{{ level }}</span>
+            <b>{{ count }} 条</b>
+          </div>
+        {% endfor %}
+      </article>
+    </section>
+
+    <section class="evidence-wall">
+      <div class="wall-title">
+        <h2>训练证据墙</h2>
+        <span>模型评估、混淆矩阵、分布与关键因素</span>
+      </div>
+      <div class="evidence-scroll">
+        <figure>
+          <img src="{{ url_for('static', filename='results/model_comparison.png') }}" alt="模型性能对比">
+          <figcaption>模型性能</figcaption>
+        </figure>
+        <figure>
+          <img src="{{ url_for('static', filename='results/confusion_matrix.png') }}" alt="混淆矩阵">
+          <figcaption>混淆矩阵</figcaption>
+        </figure>
+        <figure>
+          <img src="{{ url_for('static', filename='results/quality_distribution.png') }}" alt="空气质量等级分布">
+          <figcaption>等级分布</figcaption>
+        </figure>
+        <figure>
+          <img src="{{ url_for('static', filename='results/feature_importance.png') }}" alt="关键影响因素">
+          <figcaption>关键因素</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="model-ledger">
+      <h2>算法运行账本</h2>
+      <div class="model-rows">
+        {% for row in summary.metrics %}
+          <article>
+            <span>{{ row.model }}</span>
+            <strong>{{ "%.2f%%"|format(row.accuracy * 100) }}</strong>
+            <em>Macro-F1 {{ "%.2f%%"|format(row.macro_f1 * 100) }}</em>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+</body>
+</html>

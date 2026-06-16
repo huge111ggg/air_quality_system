@@ -1,0 +1,5 @@
+cd "C:\codex工作空间\skill-ppt\air_quality_system"
+python generate_dataset.py
+python train_model.py
+python app.py
+http://127.0.0.1:5001
